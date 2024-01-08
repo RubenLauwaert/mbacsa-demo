@@ -12,13 +12,11 @@ function App() {
       </header>
       <div className="StepMechanism">
           <StepMechanism />
-        </div>
-        <div className="DelegationVisuals">
-          <DelegationVisuals />
-        </div>
-        <div className="ServerOutput">
+      </div>
+        
+        {/* <div className="ServerOutput">
           <ServerOutput />
-        </div>
+        </div> */}
     </div>
   );
 }

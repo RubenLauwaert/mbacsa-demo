@@ -1,10 +1,15 @@
 import React from 'react';
 import '../css/DelegationVisuals.css'
+import StepFigure from './StepFigure';
 
-const DelegationVisuals = () => {
+type StepFigureProps = {
+  stepNumber: number;
+};
+
+const DelegationVisuals: React.FC<StepFigureProps> = ({ stepNumber }) => {
   return (
     <div className='visuals-container'>
-      <p>Visuals of transitive delegation example</p>
+      <StepFigure stepNumber={stepNumber}></StepFigure>
     </div>
   );
 };

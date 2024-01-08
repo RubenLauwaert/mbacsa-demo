@@ -10,6 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-top: 10px;
   gap: 10px;
   /* ... */
 }
@@ -67,12 +68,25 @@
   padding: 5px; /* Padding inside the box */
   margin-top: 10px; /* Margin above the box */
   border-radius: 8px; /* Rounded corners for a softer look */
-  margin-bottom: 10px; /* Margin above the box */
+  margin-bottom: 10px;
   
   width: 80vw; /* Width relative to the viewport width */
   height: 10vh; 
 
   line-height: 1.2; /* Line spacing for readability */
+}
+
+.visual-and-output-window {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Optional: add padding or margins as needed */
+}
+
+.DelegationVisuals, .ServerOutput {
+  flex-basis: 60%; /* Adjust as needed */
+  /* Add padding or margins for spacing if needed */
+  height: 100%;
 }
 
 

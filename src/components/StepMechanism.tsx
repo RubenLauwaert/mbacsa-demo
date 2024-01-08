@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import "../css/StepMechanism.css";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import DelegationVisuals from './DelegationVisuals';
+import ServerOutput from './ServerOutput';
 
 
 
-const stepsDemo: { [key: string]: string } = {
+const stepDescriptions: { [key: string]: string } = {
   1: "Initialize the Community Solid Server",
   2: "Seed the pods of Alice, Bob and Jane",
   3: "Alice mints a macaroon for her own resource",
@@ -21,7 +23,7 @@ const stepsDemo: { [key: string]: string } = {
 
 const StepMechanism = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const maxStep = Object.keys(stepsDemo).length ;
+  const maxStep = Object.keys(stepDescriptions).length ;
 
   const handleNext = () => {
     if (currentStep < maxStep) {
@@ -47,7 +49,17 @@ const StepMechanism = () => {
         </button>
       </div>
       <div className="step-description">
-        <p>{stepsDemo[currentStep]}</p>
+        <p>{stepDescriptions[currentStep]}</p>
+      </div>
+      <div className='visual-and-output-window'>
+        <div className="DelegationVisuals">
+            <DelegationVisuals stepNumber={currentStep} />
+        </div>
+        <div className='ServerOutput'>
+          <p>Output of Solid servers</p>
+          <ServerOutput></ServerOutput>
+        </div>
+
       </div>
     </div>
   );

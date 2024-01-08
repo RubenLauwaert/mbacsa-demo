@@ -36,14 +36,12 @@ body {
 }
 
 .StepMechanism {
-  height: 20vh;
+  height: 85vh;
 }
 
 .DelegationVisuals {
-  height: 40vh;
+  height: 60vh;
 }
 
-.ServerOutput {
-  height: 25vh;
-}
+
 

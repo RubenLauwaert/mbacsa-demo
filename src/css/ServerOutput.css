@@ -12,4 +12,5 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
   padding: 20px; /* Spacing inside container */
   margin: 10px; /* Spacing outside container */
+  height: 100%;
 }
