@@ -1,6 +1,9 @@
 import React from 'react';
 import '../css/ServerOutput.css'
 
+
+
+
 const ServerOutput = () => {
   return (
     <div className='output-container'>

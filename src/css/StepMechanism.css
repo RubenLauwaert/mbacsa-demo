@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column; /* Stack children vertically */
   align-items: center; /* Horizontally center the children */
-  justify-content: center; /* Vertically center the children (if needed) */
+
 }
 
 
@@ -84,8 +84,9 @@
 }
 
 .DelegationVisuals, .ServerOutput {
-  flex-basis: 60%; /* Adjust as needed */
+  flex-basis: 70%; /* Adjust as needed */
   /* Add padding or margins for spacing if needed */
+  background-color: #ffffff;
   height: 100%;
 }
 
