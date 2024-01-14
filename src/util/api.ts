@@ -1,4 +1,8 @@
-
+type AgentInfo =  {
+  podServerUri:string,
+  email:string,
+  password: string
+}
 
 // Function to retrieve a DPoP token
 export const retrieveDPoPToken = async (podServerUri:string, email:string, password:string):Promise<any> => {
@@ -17,7 +21,7 @@ export const retrieveDPoPToken = async (podServerUri:string, email:string, passw
 
     const data = await response.json();
     console.log('DPoP Token:', data.dpop);
-    return data;
+    return data.dpop;
     // Handle the response as needed, e.g., store it in state or use it directly
   } catch (error) {
     console.error('Error retrieving DPoP token:', error);
@@ -48,7 +52,7 @@ export const getPublicDischargeKey = async (subject:string):Promise<any> => {
 };
 
  // Function to mint a macaroon
- export const mintMacaroon = async (uri:string, requestor: string, pdk:object, mode:string, dpop:object) => {
+ export const mintMacaroon = async (uri:string, requestor: string, pdk:object, mode:string, agentInfo:AgentInfo):Promise<string|undefined> => {
   try {
     const response = await fetch('http://localhost:3004/mint', {
       method: 'POST',
@@ -60,7 +64,7 @@ export const getPublicDischargeKey = async (subject:string):Promise<any> => {
         requestor: requestor,
         dischargeKey: pdk,
         mode: mode,
-        dpop: dpop
+        agentInfo:agentInfo
       }),
     });
 
@@ -68,10 +72,62 @@ export const getPublicDischargeKey = async (subject:string):Promise<any> => {
       throw new Error('Network response was not ok');
     }
 
-    const macaroon = await response.json();
-    console.log('Minted Macaroon:', macaroon);
+    const mintResponse = await response.json();
+    console.log(mintResponse.mintedMacaroon)
+    return mintResponse.mintedMacaroon as string;
     // Handle the response as needed
   } catch (error) {
     console.error('Error minting macaroon:', error);
   }
 };
+
+// Function to discharge macaroon
+export const dischargeMacaroon = async (serializedMacaroon:string,dischargee:string,agentInfo:AgentInfo):Promise<string|undefined> => {
+  try {
+    const response = await fetch('http://localhost:3004/discharge',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      serializedMacaroon: serializedMacaroon,
+      dischargee: dischargee,
+      agentInfo:agentInfo
+    }),
+  });
+
+  const dischargeResponse = await response.json();
+  console.log(dischargeResponse.dischargeMacaroon);
+  return dischargeResponse.dischargeMacaroon
+  } catch (error) {
+    console.log("Error discharging macaroon: " + error)
+  }
+  
+
+
+}
+
+// Function to discharge macaroon
+export const delegateTo = async (serializedMacaroon:string,delegatee: string):Promise<string|undefined> => {
+  try {
+    const response = await fetch('http://localhost:3004/delegate',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      serializedMacaroon: serializedMacaroon,
+      delegatee: delegatee
+    }),
+  });
+
+  const delegateResponse = await response.json();
+  console.log(delegateResponse.attenuatedMacaroon);
+  return delegateResponse.attenuatedMacaroon;
+  } catch (error) {
+    console.log("Error delegating : " + error)
+  }
+  
+
+
+}

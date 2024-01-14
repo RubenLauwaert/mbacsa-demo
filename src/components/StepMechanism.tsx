@@ -4,7 +4,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DelegationVisuals from './DelegationVisuals';
 import ServerOutput from './ServerOutput';
-import {getPublicDischargeKey, mintMacaroon, retrieveDPoPToken} from '../util/api'
+import {delegateTo, dischargeMacaroon, getPublicDischargeKey, mintMacaroon, retrieveDPoPToken} from '../util/api'
 
 const agentInfo = {
   targetEndpoint: "http://localhost:3001/Alice/social/post1.json",
@@ -46,9 +46,9 @@ const StepMechanism = () => {
   // Public discharge keys for Alice, Bob and Jane;
   const [publicDischargeKeys,setPublicDischargeKeys] = useState({alice: {}, bob: {}, jane: {}});
   // Root (attenuated) macaroons for Alice, Bob and Janse
-  const [rootMacaroons,setRootMacaroons] = useState({alice: {}, bob: {}, jane: {}});
+  const [rootMacaroons,setRootMacaroons] = useState({alice: "", bob: "", jane: ""});
   // Discarge macaroons for Alice, Bob and Janse
-  const [dischargeMacaroons,setDischargeMacaroons] = useState({alice: {}, bob: {}, jane: {}});
+  const [dischargeMacaroons,setDischargeMacaroons] = useState({alice: "", bob: "", jane: ""});
 
 
   const handleNext = () => {
@@ -84,7 +84,7 @@ const StepMechanism = () => {
     },
     async () => {
       // Logic for step 1
-      console.log("Handling step 1")
+      console.log("Minting macaroon for Alice")
       // Retrieving pdk of Alice
       const pdkAlice = await getPublicDischargeKey(agentInfo.infoAlice.webId);
       setPublicDischargeKeys({alice: pdkAlice, bob: publicDischargeKeys.bob, jane: publicDischargeKeys.jane})
@@ -94,36 +94,52 @@ const StepMechanism = () => {
         agentInfo.infoAlice.webId,
         pdkAlice,
         'read',
-        dpopTokens.alice)
+        agentInfo.infoAlice);
+        // Set state
+        setRootMacaroons({alice: mintedMacaroonAlice as string, bob: rootMacaroons.bob, jane: rootMacaroons.jane})
     },
     async () => {
       // Logic for step 2
-      console.log("Handling step 2")
-
+      console.log("Obtaining discharge proof for Alice")
+      const dischargeMacaroonAlice = await dischargeMacaroon(rootMacaroons.alice as string,agentInfo.infoAlice.webId,agentInfo.infoAlice);
+      // Set state
+      setDischargeMacaroons({alice: dischargeMacaroonAlice as string, bob:dischargeMacaroons.bob, jane:dischargeMacaroons.jane})
 
     },
     async () => {
       // Logic for step 3
-      console.log("Handling step 3")
+      console.log("Delegating to Bob");
+      const attenuatedMacaroonBob= await delegateTo(rootMacaroons.alice,agentInfo.infoBob.webId);
+      // Set state
+      setRootMacaroons({alice: rootMacaroons.alice, bob: attenuatedMacaroonBob as string, jane:rootMacaroons.jane})
 
     },
     async () => {
       // Logic for step 4
-      console.log("Handling step 4")
+      console.log("Obtaining discharge proof for Bob")
+      const dischargeMacaroonBob = await dischargeMacaroon(rootMacaroons.bob, agentInfo.infoBob.webId, agentInfo.infoBob);
+      // Set state
+      setDischargeMacaroons({alice:dischargeMacaroons.alice, bob:dischargeMacaroonBob as string, jane:dischargeMacaroons.jane})
 
   
     },
     async () => {
       // Logic for step 5
-      console.log("Handling step 5")
+      console.log("Delegating to Jane")
+      const attenuatedMacaroonJane = await delegateTo(rootMacaroons.bob,agentInfo.infoJane.webId);
+      // Set state
+      setRootMacaroons({alice:rootMacaroons.alice,bob:rootMacaroons.bob, jane: attenuatedMacaroonJane as string})
     },
     async () => {
       // Logic for step 6
-      console.log("Handling step 6")
+      console.log("Obtaining discharge proof for Jane");
+      const dischargeMacaroonJane = await dischargeMacaroon(rootMacaroons.jane, agentInfo.infoJane.webId,agentInfo.infoJane);
+      // Set state
+      setDischargeMacaroons({alice:dischargeMacaroons.alice,bob:dischargeMacaroons.bob,jane: dischargeMacaroonJane as string});
     },
     async () => {
       // Logic for step 7
-      console.log("Handling step 1")
+      console.log("Jane accesses resource of Alice through macaroons");
     }];
 
   useEffect(() => {

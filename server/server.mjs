@@ -55,7 +55,7 @@ app.post('/mint', async (req, res) => {
     const requestor = req.body.requestor;
     const dischargeKey = req.body.dischargeKey;
     const mode = req.body.mode;
-    const dpop = req.body.dpop
+    const {podServerUri,email,password} = req.body.agentInfo;
     const mintInfo = {
       resourceURI: resourceURI,
       requestor: requestor,
@@ -63,9 +63,10 @@ app.post('/mint', async (req, res) => {
       mode: mode
     }
 
-    const {mintedMacaroon} = await mbacsaClient.mintDelegationToken(requestor,mintInfo,dpop);
-    console.log(mintedMacaroon)
-    res.json({ success: true });
+    const dpopToken = await mbacsaClient.retrieveDPoPToken(podServerUri,email,password);
+    const mintResponse = await mbacsaClient.mintDelegationToken(requestor,mintInfo,dpopToken);
+    console.log(mintResponse);
+    res.json({ success: true, mintedMacaroon: mintResponse.mintedMacaroon});
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -74,8 +75,13 @@ app.post('/mint', async (req, res) => {
 // Endpoint for delegating a macaroon
 app.post('/delegate', async (req, res) => {
   try {
+    const serializedMacaroon = req.body.serializedMacaroon;
+    const delegatee = req.body.delegatee;
 
-    res.json({ success: true });
+    const pdkDelegatee = await mbacsaClient.getPublicDischargeKey(delegatee);
+    const attenuatedMacaroon = await mbacsaClient.delegateAccessTo(serializedMacaroon,delegatee,pdkDelegatee.dischargeKey);
+    console.log(attenuatedMacaroon);
+    res.json({ success: true, attenuatedMacaroon: attenuatedMacaroon });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -84,7 +90,17 @@ app.post('/delegate', async (req, res) => {
 // Endpoint for discharging a macaroon
 app.post('/discharge', async (req, res) => {
   try {
-    res.json({ success: true });
+    const serializedMacaroon = req.body.serializedMacaroon;
+    const dischargee = req.body.dischargee;
+    const {podServerUri,email,password} = req.body.agentInfo;
+
+    
+    const dpopToken = await mbacsaClient.retrieveDPoPToken(podServerUri,email,password);
+    const dischargeResponse = await mbacsaClient.dischargeLastThirdPartyCaveat(serializedMacaroon,dischargee,dpopToken);
+    console.log(dischargeResponse)
+
+
+    res.json({ success: true, dischargeMacaroon:dischargeResponse.dischargeMacaroon});
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
