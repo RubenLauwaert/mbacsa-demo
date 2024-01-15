@@ -66,7 +66,24 @@ const StepMechanism = () => {
     }
   };
 
+  // Start the servers 
 
+  useEffect(() => {
+    // Your code here will run once when the app starts
+
+    console.log('This will run once when the component mounts');
+
+    // Example: API call to start servers
+    const startServers = async () => {
+      try {
+        const response = await fetch('http://localhost:3004/start-servers');
+      } catch (error) {
+        console.error('Error starting servers:', error);
+      }
+    };
+
+    startServers();
+  }, []);
 
   const stepActions = [
     async () => {

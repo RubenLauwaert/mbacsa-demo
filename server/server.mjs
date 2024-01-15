@@ -1,8 +1,16 @@
 import { MbacsaClient } from 'mbacsa-client';
 import express from 'express'
 import cors from 'cors';
+import  dotenv from 'dotenv';
+import net from 'net';
+import { exec } from 'child_process';
+import path from 'path';
+import fs from 'fs/promises';
 
 
+
+// dotenv
+dotenv.config()
 
 // Express app
 const app = express();
@@ -18,6 +26,68 @@ const PORT =  3004;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Helper function to check port availability
+function checkPort(port) {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+
+    server.once('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        resolve(false); // Port is in use
+      } else {
+        reject(err);
+      }
+    });
+
+    server.once('listening', () => {
+      server.close();
+      resolve(true); // Port is available
+    });
+
+    server.listen(port);
+  });
+}
+
+// Helper function to remove ./internal directory
+async function removeInternalDirectory(serverPath) {
+  const internalDirPath = path.join(serverPath, '.internal');
+  const removeCommand = `rm -rf "${internalDirPath}"`;
+
+  return new Promise((resolve, reject) => {
+    exec(removeCommand, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error removing .internal directory:', error);
+        reject(error);
+      } else {
+        console.log('Removed .internal directory');
+        resolve(stdout || stderr);
+      }
+    });
+  });
+}
+
+// endpoint for starting the community solid servers
+
+app.get('/start-servers', async(req,res) => {
+  try {
+    // Check if servers are already running
+    const ports = [process.env.PORT_ALICE,process.env.PORT_BOB,process.env.PORT_JANE];
+    const portStatuses = await Promise.all(ports.map(port => checkPort(port)))
+    console.log(portStatuses)
+    const allPortsAvailable = portStatuses.every(status => status);
+    if(allPortsAvailable){
+      console.log("Starting the community solid servers");
+      // Remove /.internal directory
+    }
+
+  } catch (error) {
+    
+  }
+})
+
+
+
 
 // Endpoint for retrieving a dpoptoken
 app.post('/dpop', async (req, res) => {
