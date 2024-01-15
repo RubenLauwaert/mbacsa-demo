@@ -3,14 +3,29 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  text-align: center;
 
   background-color: #1a1a1a; /* Light background for high contrast */
   color: #ffffff; /* Dark text for readability */
   border: 1px solid #e0e0e0; /* Light grey border for definition */
   border-radius: 8px; /* Rounded corners */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  padding: 20px; /* Spacing inside container */
-  margin: 10px; /* Spacing outside container */
+
+
+  margin-top: 10px; /* Spacing outside container */
+  height: 15vh;
+  width: 80vw;
+}
+
+.output-text {
+  text-align: left;
+  padding: 10px;
+
+  width: 95%;
   height: 100%;
+}
+
+.output-text p {
+  margin: 0;
+  padding: 2px 0;
+  line-height: normal;
 }

@@ -4,7 +4,8 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DelegationVisuals from './DelegationVisuals';
 import ServerOutput from './ServerOutput';
-import {delegateTo, dischargeMacaroon, getPublicDischargeKey, mintMacaroon, retrieveDPoPToken} from '../util/api'
+import {accessResource, delegateTo, dischargeMacaroon, getPublicDischargeKey, mintMacaroon} from '../util/api'
+import { compressString } from '../util/helper';
 
 const agentInfo = {
   targetEndpoint: "http://localhost:3001/Alice/social/post1.json",
@@ -41,14 +42,16 @@ const StepMechanism = () => {
   // Steps counter
   const [currentStep, setCurrentStep] = useState(0);
   const maxStep = Object.keys(stepDescriptions).length ;
-  // DPoP tokens for Alice, Bob and Janse
-  const [dpopTokens,setDpopTokens] = useState({alice: {}, bob: {}, jane: {}});
   // Public discharge keys for Alice, Bob and Jane;
   const [publicDischargeKeys,setPublicDischargeKeys] = useState({alice: {}, bob: {}, jane: {}});
   // Root (attenuated) macaroons for Alice, Bob and Janse
   const [rootMacaroons,setRootMacaroons] = useState({alice: "", bob: "", jane: ""});
   // Discarge macaroons for Alice, Bob and Janse
   const [dischargeMacaroons,setDischargeMacaroons] = useState({alice: "", bob: "", jane: ""});
+  // Alice's resource
+  const [postAlice,setPostAlice] = useState("");
+  // Server output
+  const [serverOutput,setServerOutput] = useState(["Responses of servers are shown here..."]);
 
 
   const handleNext = () => {
@@ -64,19 +67,6 @@ const StepMechanism = () => {
   };
 
 
-  const fetchDPoPTokens = async () => {
-    const dpopTokenAlice = await retrieveDPoPToken(agentInfo.infoAlice.podServerUri,agentInfo.infoAlice.email,agentInfo.infoAlice.password);
-    const dpopTokenBob = await retrieveDPoPToken(agentInfo.infoBob.podServerUri,agentInfo.infoBob.email,agentInfo.infoBob.password);
-    const dpopTokenJane = await retrieveDPoPToken(agentInfo.infoJane.podServerUri,agentInfo.infoJane.email,agentInfo.infoJane.password);
-    setDpopTokens({alice: dpopTokenAlice, bob: dpopTokenBob, jane: dpopTokenJane})
-  }
-  
-
-
-  // Upon starting the demo, retrieve dpop token for Alice, Bob and Jane
-  useEffect(() => {
-    fetchDPoPTokens()
-  }, []);
 
   const stepActions = [
     async () => {
@@ -97,6 +87,10 @@ const StepMechanism = () => {
         agentInfo.infoAlice);
         // Set state
         setRootMacaroons({alice: mintedMacaroonAlice as string, bob: rootMacaroons.bob, jane: rootMacaroons.jane})
+        // Server output
+        setServerOutput(serverOutput.concat([`[CSS:3001] Minted root macaroon for Alice : ${compressString(mintedMacaroonAlice as string)}`]))
+
+
     },
     async () => {
       // Logic for step 2
@@ -104,6 +98,9 @@ const StepMechanism = () => {
       const dischargeMacaroonAlice = await dischargeMacaroon(rootMacaroons.alice as string,agentInfo.infoAlice.webId,agentInfo.infoAlice);
       // Set state
       setDischargeMacaroons({alice: dischargeMacaroonAlice as string, bob:dischargeMacaroons.bob, jane:dischargeMacaroons.jane})
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3001] Minted discharge macaroon for Alice: ${compressString(dischargeMacaroonAlice as string)}`]))
+
 
     },
     async () => {
@@ -112,6 +109,9 @@ const StepMechanism = () => {
       const attenuatedMacaroonBob= await delegateTo(rootMacaroons.alice,agentInfo.infoBob.webId);
       // Set state
       setRootMacaroons({alice: rootMacaroons.alice, bob: attenuatedMacaroonBob as string, jane:rootMacaroons.jane})
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3002] Retrieved Bob's public discharge key`,
+        `[Client] Delegated to Bob, attenuated macaroon : ${compressString(attenuatedMacaroonBob as string)}`]))
 
     },
     async () => {
@@ -120,6 +120,8 @@ const StepMechanism = () => {
       const dischargeMacaroonBob = await dischargeMacaroon(rootMacaroons.bob, agentInfo.infoBob.webId, agentInfo.infoBob);
       // Set state
       setDischargeMacaroons({alice:dischargeMacaroons.alice, bob:dischargeMacaroonBob as string, jane:dischargeMacaroons.jane})
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3002] Minted discharge macaroon for Bob: ${compressString(dischargeMacaroonBob as string)}`]))
 
   
     },
@@ -129,6 +131,9 @@ const StepMechanism = () => {
       const attenuatedMacaroonJane = await delegateTo(rootMacaroons.bob,agentInfo.infoJane.webId);
       // Set state
       setRootMacaroons({alice:rootMacaroons.alice,bob:rootMacaroons.bob, jane: attenuatedMacaroonJane as string})
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3002] Retrieved Jane's public discharge key`,
+        `[Client] Delegated to Jane, attenuated macaroon : ${compressString(attenuatedMacaroonJane as string)}`]))
     },
     async () => {
       // Logic for step 6
@@ -136,10 +141,18 @@ const StepMechanism = () => {
       const dischargeMacaroonJane = await dischargeMacaroon(rootMacaroons.jane, agentInfo.infoJane.webId,agentInfo.infoJane);
       // Set state
       setDischargeMacaroons({alice:dischargeMacaroons.alice,bob:dischargeMacaroons.bob,jane: dischargeMacaroonJane as string});
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3003] Minted discharge macaroon for Jane: ${compressString(dischargeMacaroonJane as string)}`]))
     },
     async () => {
       // Logic for step 7
       console.log("Jane accesses resource of Alice through macaroons");
+      const postAlice = await accessResource(agentInfo.targetEndpoint,[rootMacaroons.jane,dischargeMacaroons.alice,dischargeMacaroons.bob,dischargeMacaroons.jane]);
+      // Set state
+      setPostAlice(postAlice as string);
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3001] Alice's post : ${postAlice}`]))
+
     }];
 
   useEffect(() => {
@@ -166,13 +179,10 @@ const StepMechanism = () => {
         <p>{stepDescriptions[currentStep]}</p>
       </div>
       <div className='visual-and-output-window'>
-        <div className='ServerOutput'>
-          <p>Output of Solid servers</p>
-          <ServerOutput></ServerOutput>
-        </div>
         <div className="DelegationVisuals">
             <DelegationVisuals stepNumber={currentStep} />
         </div>
+        <ServerOutput output={serverOutput}></ServerOutput>
       </div>
     </div>
   );

@@ -131,3 +131,28 @@ export const delegateTo = async (serializedMacaroon:string,delegatee: string):Pr
 
 
 }
+
+// Function to access resource
+export const accessResource = async (resourceUri: string, serializedMacaroons:Array<string>):Promise<string|undefined> => {
+  try {
+    const response = await fetch('http://localhost:3004/access',{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      resourceUri: resourceUri,
+      serializedMacaroons: serializedMacaroons,
+    }),
+  });
+
+  const accessResponse = await response.json();
+  console.log(accessResponse.resource);
+  return accessResponse.resource;
+  } catch (error) {
+    console.log("Error accessing resource : " + error)
+  }
+  
+
+
+}

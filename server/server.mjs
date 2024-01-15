@@ -110,7 +110,12 @@ app.post('/discharge', async (req, res) => {
 app.post('/access', async (req, res) => {
   try {
 
-    res.json({ success: true });
+    const resourceUri = req.body.resourceUri;
+    const serializedMacaroons = req.body.serializedMacaroons;
+
+    const resource = await mbacsaClient.accessWithDelegationToken(resourceUri,serializedMacaroons);
+
+    res.json({ success: true, resource:resource });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

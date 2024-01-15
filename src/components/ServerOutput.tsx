@@ -1,16 +1,25 @@
 import React from 'react';
-import '../css/ServerOutput.css'
+import '../css/ServerOutput.css';
 
+interface ServerOutputProps {
+  output: string[];
+}
 
+const ServerOutput: React.FC<ServerOutputProps> = ({ output }) => {
+  // Get the last 5 elements of the array, or all elements if fewer than 5
+  const lastFive = output.slice(-5);
 
-
-const ServerOutput = () => {
   return (
     <div className='output-container'>
-      {/* Middleware output goes here */}
-      <p>Responses of the Community Solid Server</p>
+      <div className='output-text'>
+        {lastFive.map((item, index) => (
+          <p key={index}>{item}</p> // Use index as a key (or a unique identifier if available)
+        ))}
+      </div>
     </div>
   );
 };
 
 export default ServerOutput;
+
+

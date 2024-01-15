@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column; /* Stack children vertically */
   align-items: center; /* Horizontally center the children */
-
+  min-width: 800px;
 }
 
 
@@ -78,16 +78,17 @@
 
 .visual-and-output-window {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
   /* Optional: add padding or margins as needed */
 }
 
 .DelegationVisuals, .ServerOutput {
-  flex-basis: 70%; /* Adjust as needed */
   /* Add padding or margins for spacing if needed */
   background-color: #ffffff;
   height: 100%;
+  width: 80vw;
 }
 
 
