@@ -71,18 +71,27 @@ async function removeInternalDirectory(serverPath) {
 
 app.get('/start-servers', async(req,res) => {
   try {
-    // Check if servers are already running
-    const ports = [process.env.PORT_ALICE,process.env.PORT_BOB,process.env.PORT_JANE];
-    const portStatuses = await Promise.all(ports.map(port => checkPort(port)))
-    console.log(portStatuses)
-    const allPortsAvailable = portStatuses.every(status => status);
-    if(allPortsAvailable){
-      console.log("Starting the community solid servers");
-      // Remove /.internal directory
-    }
 
-  } catch (error) {
     
+    // Check if servers are already running
+    const ports = [process.env.PORT_ALICE, process.env.PORT_BOB, process.env.PORT_JANE];
+    const portStatuses = await Promise.all(ports.map(port => checkPort(port)));
+    const allPortsAvailable = portStatuses.every(status => status);
+    if (allPortsAvailable) {
+      console.log("Starting the community solid servers");
+      exec(`bash ${process.env.PATH_TO_SERVER_SCRIPT}`, (error, stdout, stderr) => {
+        if (error) {
+          console.error('Error executing script:', error);
+          return res.status(500).json({ success: false, message: 'Failed to start servers.' });
+        }
+        console.log('Servers started successfully');
+        res.json({ success: true, message: 'Servers started successfully.' });
+      });
+    } else {
+      res.status(400).json({ success: false, message: 'One or more ports are already in use.' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 })
 

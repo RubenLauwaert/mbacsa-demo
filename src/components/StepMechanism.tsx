@@ -77,6 +77,7 @@ const StepMechanism = () => {
     const startServers = async () => {
       try {
         const response = await fetch('http://localhost:3004/start-servers');
+        console.log(response)
       } catch (error) {
         console.error('Error starting servers:', error);
       }

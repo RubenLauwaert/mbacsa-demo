@@ -4,10 +4,24 @@
 SERVER_PATH="$HOME/Desktop/Thesis/Code/mbacsa-css"
 
 # Function to run a command in a new Terminal window with cleanup
+# Function to run a command in a new Terminal window with cleanup and dynamic position
+# Function to run a command in a new Terminal window with cleanup and dynamic position
 run_in_new_terminal() {
+    local window_index=$2
     osascript <<END
+    tell application "Finder"
+        set screen_resolution to bounds of window of desktop
+    end tell
+
     tell application "Terminal"
         do script "cd $SERVER_PATH && $1; echo 'Press enter to close...'; read"
+        set screen_width to item 3 of screen_resolution
+        set screen_height to item 4 of screen_resolution
+        set window_width to screen_width / 4
+        set window_height to screen_height / 3
+        set window_x to screen_width - window_width
+        set window_y to window_height * ($window_index - 1)
+        set the bounds of the first window to {window_x, window_y, window_x + window_width, window_y + window_height}
         activate
     end tell
 END
@@ -41,9 +55,9 @@ if [ -d "$INTERNAL_DIR" ]; then
 fi
 
 # Start the server instances in separate Terminal windows
-run_in_new_terminal "$COMMAND_RUN_SERVER_ALICE"
-run_in_new_terminal "$COMMAND_RUN_SERVER_BOB"
-run_in_new_terminal "$COMMAND_RUN_SERVER_JANE"
+run_in_new_terminal "$COMMAND_RUN_SERVER_ALICE" 1
+run_in_new_terminal "$COMMAND_RUN_SERVER_BOB" 2
+run_in_new_terminal "$COMMAND_RUN_SERVER_JANE" 3
 
 # The script ends here, as we cannot wait for processes in separate terminals
 echo "Servers started in separate Terminal windows. Please close each window manually to stop the servers."
