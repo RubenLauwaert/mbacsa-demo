@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # Define the server path
-SERVER_PATH="$HOME/Desktop/Thesis/Code/mbacsa-css"
+SERVER_PATH_MACBOOK="$HOME/Desktop/Universiteit/Master-3/Thesis/Code/Personal-Repos/mbacsa-component"
+SERVER_PATH_MAC_MINI="$HOME/Desktop/Thesis/Code/mbacsa-css"
+SERVER_PATH=$SERVER_PATH_MACBOOK
 
 # Function to run a command in a new Terminal window with cleanup
 # Function to run a command in a new Terminal window with cleanup and dynamic position
