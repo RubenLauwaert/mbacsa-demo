@@ -3,35 +3,26 @@
 # Define the server path
 SERVER_PATH="$HOME/Desktop/Thesis/Code/mbacsa-css"
 
+# Function to run a command in a new Terminal window with cleanup
+run_in_new_terminal() {
+    osascript <<END
+    tell application "Terminal"
+        do script "cd $SERVER_PATH && $1; echo 'Press enter to close...'; read"
+        activate
+    end tell
+END
+}
+
 # Commands to run each server instance
 COMMAND_RUN_SERVER_ALICE="npm run start -- -p 3001 --seededPodConfigJson ./seedingPods/alice.json"
 COMMAND_RUN_SERVER_BOB="npm run start -- -p 3002 --seededPodConfigJson ./seedingPods/bob.json"
 COMMAND_RUN_SERVER_JANE="npm run start -- -p 3003 --seededPodConfigJson ./seedingPods/jane.json"
 
-# Array to store PIDs of the server processes
-declare -a SERVER_PIDS
-
 # Function to check if a port is in use
 is_port_in_use() {
-    netstat -an | grep $1 > /dev/null
+    lsof -i tcp:$1 > /dev/null
     return $?
 }
-
-# Function to clean up and exit
-cleanup() {
-    echo "Stopping server processes..."
-    for pid in "${SERVER_PIDS[@]}"; do
-        if kill -0 $pid > /dev/null 2>&1; then
-            kill $pid
-            wait $pid
-        fi
-    done
-    echo "Server processes stopped."
-    exit 0
-}
-
-# Set trap to call cleanup function on script interruption
-trap cleanup INT TERM
 
 # Check each port
 PORTS=(3001 3002 3003)
@@ -49,18 +40,11 @@ if [ -d "$INTERNAL_DIR" ]; then
     rm -rf "$INTERNAL_DIR"
 fi
 
-# Start the server instances
-echo "Starting server Alice"
-cd "$SERVER_PATH" && eval $COMMAND_RUN_SERVER_ALICE &
-SERVER_PIDS+=($!)
+# Start the server instances in separate Terminal windows
+run_in_new_terminal "$COMMAND_RUN_SERVER_ALICE"
+run_in_new_terminal "$COMMAND_RUN_SERVER_BOB"
+run_in_new_terminal "$COMMAND_RUN_SERVER_JANE"
 
-echo "Starting server Bob"
-cd "$SERVER_PATH" && eval $COMMAND_RUN_SERVER_BOB &
-SERVER_PIDS+=($!)
+# The script ends here, as we cannot wait for processes in separate terminals
+echo "Servers started in separate Terminal windows. Please close each window manually to stop the servers."
 
-echo "Starting server Jane"
-cd "$SERVER_PATH" && eval $COMMAND_RUN_SERVER_JANE &
-SERVER_PIDS+=($!)
-
-# Wait for all servers to exit
-wait
