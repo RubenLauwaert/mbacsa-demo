@@ -200,3 +200,17 @@ app.post('/access', async (req, res) => {
   }
 });
 
+// Endpoint for revoking a delegation 
+app.post('/revoke', async (req,res) => {
+  try {
+    const serializedMacaroons = req.body.serializedMacaroons;
+    const revoker = req.body.revoker;
+    const revokee = req.body.revokee;
+
+    const revocationResponse = await mbacsaClient.revokeDelegationToken(revoker,revokee,serializedMacaroons);
+    res.json({success: true, message: revocationResponse})
+  } catch (error) {
+    res.status(500).json({success: false, message: error.message});
+  }
+})
+

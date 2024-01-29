@@ -156,3 +156,32 @@ export const accessResource = async (resourceUri: string, serializedMacaroons:Ar
 
 
 }
+
+// Send request to revoke delegation token
+
+export const revokeDelegationToken = async (revoker:string,revokee:string,macaroons:Array<string>):Promise<string|undefined> => {
+
+
+    try {
+      const response = await fetch('http://localhost:3004/revoke',{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        revoker: revoker,
+        revokee: revokee,
+        serializedMacaroons: macaroons,
+      }),
+    });
+  
+    const revocationResponse = await response.json();
+    console.log(revocationResponse.success);
+    return "Successfully revoked delegation token for" + revokee;
+    } catch (error) {
+      console.log("Error revoking : " + error)
+    }
+    
+  
+
+}

@@ -4,7 +4,7 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import DelegationVisuals from './DelegationVisuals';
 import ServerOutput from './ServerOutput';
-import {accessResource, delegateTo, dischargeMacaroon, getPublicDischargeKey, mintMacaroon} from '../util/api'
+import {accessResource, delegateTo, dischargeMacaroon, getPublicDischargeKey, mintMacaroon, revokeDelegationToken} from '../util/api'
 import { compressString } from '../util/helper';
 
 const agentInfo = {
@@ -34,7 +34,10 @@ const stepDescriptions: { [key: string]: string } = {
   4: "Bob adds a discharge proof, activating delegation of Alice",
   5: "Bob delegates to Jane",
   6: "Jane adds a discharge proof, activating delegation of Bob",
-  7: "Jane accesses resource of Alice via macaroons"
+  7: "Jane accesses resource of Alice via macaroons",
+  8: "Alice revokes delegation made to Bob",
+  9: "Bob tries to access recource and fails",
+  10: "Jane tries to access resource and fails"
 }
 
 
@@ -170,6 +173,34 @@ const StepMechanism = () => {
       setPostAlice(postAlice as string);
       // Server output
       setServerOutput(serverOutput.concat([`[CSS:3001] Alice's post : ${postAlice}`]))
+
+    },
+    async () => {
+      // Logic for step 8 
+      console.log("Alice revokes Bob's credentials");
+      const revocationRes = await revokeDelegationToken(agentInfo.infoAlice.webId,agentInfo.infoBob.webId,
+        [rootMacaroons.alice,dischargeMacaroons.alice]);
+        // Server output
+        setServerOutput(serverOutput.concat([`[CSS:3001] Successfully revoked delegation for Bob !`]))
+    },
+    async () => {
+      // Logic for step 9
+      console.log("Bob tries to access Alice's resource");
+      const postAlice = await accessResource(agentInfo.targetEndpoint,[rootMacaroons.bob,dischargeMacaroons.alice,dischargeMacaroons.bob]);
+      // Set state
+      setPostAlice(postAlice as string);
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3001] Presented macaroons for Bob are not authorized !`]))
+
+    },
+    async () => {
+      // Logic for step 10
+      console.log("Jane tries to access Alice's resource");
+      const postAlice = await accessResource(agentInfo.targetEndpoint,[rootMacaroons.jane,dischargeMacaroons.alice,dischargeMacaroons.bob,dischargeMacaroons.jane]);
+      // Set state
+      setPostAlice(postAlice as string);
+      // Server output
+      setServerOutput(serverOutput.concat([`[CSS:3001] Presented macaroons for Jane are not authorized !`]))
 
     }];
 
